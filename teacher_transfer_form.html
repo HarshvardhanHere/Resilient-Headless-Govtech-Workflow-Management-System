@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Transfer Application</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+        h1 { color: #333; margin-bottom: 10px; font-size: 28px; }
+        .subtitle { color: #666; margin-bottom: 30px; font-size: 14px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; font-size: 14px; }
+        input, select, textarea {
+            width: 100%; padding: 12px; border: 2px solid #e0e0e0;
+            border-radius: 6px; font-size: 14px; transition: border-color 0.3s;
+            font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #667eea; }
+        textarea { resize: vertical; min-height: 80px; }
+        button {
+            width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; border-radius: 6px; font-size: 16px;
+            font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4); }
+        button:disabled { background: #a0aec0; cursor: not-allowed; transform: none; }
+        
+        /* --- CSS FIX APPLIED BELOW --- */
+        .status { margin-top: 20px; padding: 12px; border-radius: 6px; text-align: center; font-weight: 500; display: none; }
+        
+        /* Added 'display: block' to force visibility */
+        .status.success { 
+            background: #d4edda; 
+            color: #155724; 
+            border: 1px solid #c3e6cb; 
+            display: block; 
+        }
+        .status.error { 
+            background: #f8d7da; 
+            color: #721c24; 
+            border: 1px solid #f5c6cb; 
+            display: block; 
+        }
+        .status.loading { 
+            background: #e2e8f0; 
+            color: #2d3748; 
+            border: 1px solid #cbd5e0; 
+            display: block; 
+        }
+        
+        .api-info { background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #28a745; }
+        .api-info code { display: block; color: #333; font-size: 12px; word-break: break-all; }
+        .api-label { font-weight: 600; color: #28a745; margin-bottom: 5px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Teacher Transfer Application</h1>
+        <p class="subtitle">GovTech Workflow Engine</p>
+        
+        <div class="api-info">
+            <div class="api-label">CONNECTED ENGINE:</div>
+            <code>http://localhost:3000/start-gov-workflow</code>
+        </div>
+        
+        <form id="transferForm">
+            <div class="form-group">
+                <label for="teacherName">Teacher Name *</label>
+                <input type="text" id="teacherName" name="teacherName" required placeholder="Enter full name">
+            </div>
+            <div class="form-group">
+                <label for="teacherId">Teacher ID *</label>
+                <input type="number" id="teacherId" name="teacherId" required placeholder="12345">
+            </div>
+            <div class="form-group">
+                <label for="age">Age *</label>
+                <input type="number" id="age" name="age" required placeholder="35">
+            </div>
+            <div class="form-group">
+                <label for="yearsOfService">Years of Service *</label>
+                <input type="number" id="yearsOfService" name="yearsOfService" required placeholder="5">
+            </div>
+            <div class="form-group">
+                <label for="preferredSchools">Preferred Schools *</label>
+                <textarea id="preferredSchools" name="preferredSchools" required placeholder="Enter schools..."></textarea>
+            </div>
+            
+            <button type="submit">Submit Transfer Application</button>
+        </form>
+        
+        <div class="status" id="status"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/start-gov-workflow';
+        
+        document.getElementById('transferForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const statusDiv = document.getElementById('status');
+            const submitButton = e.target.querySelector('button');
+            
+            // UI State: Pending
+            submitButton.disabled = true;
+            submitButton.textContent = 'Processing...';
+            statusDiv.className = 'status loading';
+            statusDiv.textContent = 'Status: Submitted. Pending approval (Estimated Wait: 30s)';
+            
+            const formData = {
+                teacherName: document.getElementById('teacherName').value,
+                teacherId: parseInt(document.getElementById('teacherId').value),
+                age: parseInt(document.getElementById('age').value),
+                yearsOfService: parseInt(document.getElementById('yearsOfService').value),
+                preferredSchools: document.getElementById('preferredSchools').value
+            };
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (data.result.includes("rejected")) {
+                         statusDiv.className = 'status error';
+                         statusDiv.textContent = `Denied: ${data.result}`;
+                    } else {
+                         statusDiv.className = 'status success';
+                         statusDiv.textContent = `Success: ${data.result}`;
+                    }
+                    // IMPORTANT: The form reset code has been intentionally removed
+                    // so the data and message stay visible.
+                } else {
+                    throw new Error(data.message || 'Workflow Failed');
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `Connection Error: ${error.message}`;
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Submit Transfer Application';
+            }
+        });
+    </script>
+</body>
+</html>

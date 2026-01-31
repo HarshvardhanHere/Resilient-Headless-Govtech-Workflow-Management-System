@@ -1,0 +1,212 @@
+{
+  "name": "govtech1",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "teacher-input",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -288,
+        -112
+      ],
+      "id": "0542f130-071b-4bc3-8958-9fcc0a3a0440",
+      "name": "Webhook",
+      "webhookId": "e896be7f-0f34-498a-ab5e-e1b27915296a"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a803d0f2-c81c-4ec9-937c-de32340d29b1",
+              "leftValue": "={{ $json.body.teacherName }}",
+              "rightValue": "[0-9]",
+              "operator": {
+                "type": "string",
+                "operation": "notRegex"
+              }
+            },
+            {
+              "id": "26626cad-9ed6-4376-9780-7b7791e8b025",
+              "leftValue": "={{ $json.body.age }}",
+              "rightValue": 100,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            },
+            {
+              "id": "2e003f81-a221-438e-9e8d-1ce3238d226e",
+              "leftValue": "={{ $json.body.yearsOfService }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "07a64569-d5c4-40d6-b2f2-34b4e2011493",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -80,
+        -112
+      ],
+      "id": "f911227f-7d02-4488-858b-4c607ad01b09",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:3000/start-gov-workflow",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "teacherName",
+              "value": "={{ $json.body.teacherName }}"
+            },
+            {
+              "name": "age",
+              "value": "={{ $json.body.age }}"
+            },
+            {
+              "name": "yearsOfService",
+              "value": "={{ $json.body.yearsOfService }}"
+            },
+            {
+              "name": "forceFail",
+              "value": "false"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        128,
+        -208
+      ],
+      "id": "f219c384-5178-4627-b861-de0981317404",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=just give the output as \"{{ $json.status }}\" and \"{{ $json.detail }}\"",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        336,
+        -208
+      ],
+      "id": "f8f82f6a-1464-4fab-9dd3-28ca20d28d3c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        336,
+        -32
+      ],
+      "id": "cebe45c5-f266-491a-9b91-0491ad61e812",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "b6mF8ajbkLU4TTND",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "5f84a524-e9e6-4978-a703-be5b0e6d380e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "72e6e2eefbb9c9ef556d10232bd463e995b599469da0ceef04f47a9da9faa726"
+  },
+  "id": "aqMLcpmNaTSUa4bpYDD0W",
+  "tags": []
+}
