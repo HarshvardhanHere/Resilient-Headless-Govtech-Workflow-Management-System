@@ -11,7 +11,7 @@ This system is an automated solution designed to manage complex government admin
 
 ## Core Components
 * **API Bridge**: Located in the bridge for api directory, this component manages the communication between the workflow engine and external notification services.
-* **Automation Engine**: The chal ja n8n directory contains the configuration for the orchestration layer, including the database and environment settings.
+* **Automation Engine**: The 'chal ja n8n' directory contains the configuration for the orchestration layer, including the database and environment settings.
 * **Frontend Interface**: The project includes a sample interface for the teacher transfer process to demonstrate the end to end flow of information.
 
 ## Technology Stack
